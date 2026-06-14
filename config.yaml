@@ -11,6 +11,7 @@ paths:
   processed_dir: "data/squad_tokenized"
   model_dir: "models/bert-qa"
   inference_model_dir: "models/bert-qa/checkpoint-30000"
+  quantized_model_dir: "models/bert-qa/quantized"
   tokenizer_dir: "models/bert-qa"
   logs_dir: "logs/"
 
