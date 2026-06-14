@@ -56,7 +56,7 @@ def evaluate():
 
     raw_dataset_path = config["paths"]["raw_data"]
     tokenized_dataset_path = config["paths"]["processed_dir"]
-    model_dir = config["paths"]["model_dir"]
+    model_dir = config["paths"]["inference_model_dir"]
 
     logger.info("Loading raw dataset from: %s", raw_dataset_path)
     raw_dataset = load_from_disk(raw_dataset_path)
