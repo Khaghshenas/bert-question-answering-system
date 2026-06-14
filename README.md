@@ -6,12 +6,15 @@ This repository presents an end-to-end question answering system built with Dist
 
 It implements a complete machine learning pipeline that covers the full lifecycle of an NLP model, from raw data processing to model training, evaluation, and deployment.
 
+In addition to standard training and inference, the project explores **model quantization**, demonstrating how large language models can be efficiently compressed while maintaining competitive performance. This is particularly important for modern NLP systems, where model size and inference cost are significant challenges.
+
 The system is designed to be reproducible and modular, making it easy to experiment locally with lightweight configurations while also scaling to full training setups on GPU.  
 
 ---
 ## Key Features
 - **End-to-end ML pipeline** spanning data ingestion, preprocessing, training, evaluation, and inference
 - **Fine-tuned DistilBERT model** for extractive question answering on SQuAD
+- **Quantization experiments (FP32 → INT8)** to reduce model size and improve inference efficiency with minimal accuracy loss
 - **Production-style API** for real-time inference
 - **Config-driven design** for reproducibility and easy experimentation
 - **Dynamic Padding**: efficient batching strategy that pads only to the longest sequence in a batch, reducing memory usage and improving training efficiency.
@@ -48,12 +51,14 @@ qa-bert-squad/
 │   ├── training/
 │   │   └── train.py           # model fine-tuning pipeline
 │   ├── evaluation/
-│   │   └── evaluate.py        # EM / F1 evaluation on validation set
+│   │   └── evaluate.py        # ealuation on validation set
+│   ├── quantization
+│   │   └── quantize.py        # model quantization (FP32 → INT8 using dynamic quantization)
 │   └── utils/       
-│       └── config.py          # Config loader
+│       └── config.py          # config loader
 ├── app/
 │   ├── api.py                 # Flask API for real-time inference
-│   └── predict.py             # Core prediction logic (model wrapper)
+│   └── predict.py     
 ├── tests/                  
 ├── logs/ 
 ├── config.yaml                 # global configuration (paths, parameters, hyperparameters)
@@ -72,20 +77,56 @@ This project exposes a REST API using Flask for question-answering inference. St
 python -m app.api
 ```
 
-The API will be available at http://127.0.0.1:5000
-
-Interactive API documentation is available at:
+The interactive API documentation is available at:
 
 http://127.0.0.1:5000/apidocs/
 
 ---
-## Evaluation Results
+## Evaluation
 
-EM and F1 scores on the subset (40k training / 4000 validation examples):
-- EM ~63.20%
-- F1 ~74.38%
+### 1. Extractive Question Answering Prediction
 
-> Note: Full training on GPU is expected to achieve higher scores.
+This project follows the standard **extractive question answering** formulation, where the model does not generate new text but instead selects an answer span directly from the given context. Given an input pair **Question (Q)** and **Context (C)**, the model processes the concatenated sequence:
+
+```bash 
+[CLS]Q[SEP]C[SEP]
+```
+
+The transformer encoder produces contextualized token representations, which are then passed to two separate linear layers:
+
+- Start logits → probability of each token being the start of the answer span
+- End logits → probability of each token being the end of the answer span
+
+The prediction is made by choosing the tokens with the highest scores:
+
+- The token with the highest start score is selected as the beginning of the answer
+- The token with the highest end score is selected as the end of the answer
+
+The final answer is then formed by taking all tokens between these two positions and converting them back into text.
+
+### 2. Exact Match (EM)
+
+Exact Match (EM) is a strict evaluation metric that measures whether the predicted answer exactly matches any of the ground-truth answers. EM is a **binary metric**, meaning that even small differences (e.g., missing a word) result in a score of 0.
+
+### 3. F1 Score (Token-Level Overlap)
+
+the F1 score provides a softer and more informative evaluation by measuring token-level overlap between prediction and ground truth. Both prediction and ground truth are treated as bags of tokens. The final F1 score is the harmonic mean of precision and recall. F1 provides partial credit when the predicted span overlaps with the correct answer, making it more robust than Exact Match for evaluating extractive QA systems.
+
+### 4. Evaluation Results
+
+| Metric                   | FP32 Model   | INT8 (Quantized) Model | Improvement        |
+| ------------------------ | ------------ | ---------------------- | -------------------|
+| **Exact Match (EM)**     | 60%          | 58%                    | slight drop        |
+| **F1 Score**             | 72%          | 68.77%                 | moderate drop      |
+| **Inference Time (avg)** | 153 ms       | 70.71 ms               | 2.16× faster       |
+| **Model Size**           | 760.74 MB    | 132.62 MB              | 5.7× smaller       |
+| **Precision**            | FP32         | INT8 (Linear layers)   | Lower precision    |
+
+- EM and F1 typically remain almost unchanged for dynamic quantization.
+- The main benefit is reduced model size + faster CPU inference.
+- INT8 quantization in this project applies to Linear layers only.
+
+> Note: Results are based on training with 30K samples from the full dataset. Using the full dataset is expected to improve EM and F1 scores.
 
 ---
 ## CI/CD
@@ -145,7 +186,6 @@ For demonstration, a small subset is used; full training is supported on GPU.
 python -m src.evaluation.evaluate
 ```
 Computes Exact Match (EM) and F1 score on validation subset.
-
 
 ---
 ## License
