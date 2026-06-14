@@ -1,0 +1,14 @@
+torch
+transformers
+datasets
+scikit-learn
+pandas
+numpy
+flask
+seqeval
+matplotlib
+hf_xet
+protobuf 
+pytest
+flasgger
+accelerate>=0.26.0

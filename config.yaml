@@ -1,0 +1,44 @@
+# QA BERT Project Config
+
+project:
+  name: qa-bert-squad
+
+data:
+  dataset_name: squad
+
+paths:
+  raw_data: "data/squad/"
+  processed_dir: "data/squad_tokenized"
+  model_dir: "models/bert-qa"
+  inference_model_dir: "models/bert-qa/checkpoint-30000"
+  tokenizer_dir: "models/bert-qa"
+  logs_dir: "logs/"
+
+models:
+  tokenizer_name: distilbert-base-uncased
+  pretrained_model: distilbert-base-uncased
+
+# max input settings used in both training + inference
+tokenization:
+  max_length: 384
+  stride: 128
+  padding: longest
+  truncation: only_second
+
+training:
+  num_train_epochs: 2
+  per_device_train_batch_size: 2
+  save_steps: 500
+  save_total_limit: 2
+  remove_unused_columns: false
+  dataloader_pin_memory: false
+  train_subset_size: 40000
+  validation_subset_size: 4000
+
+inference:
+  max_answer_length: 30
+  use_gpu: false
+
+logging:
+  level: INFO
+  save_training_logs: true
