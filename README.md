@@ -6,7 +6,7 @@ This repository presents an end-to-end question answering system built with Dist
 
 It implements a complete machine learning pipeline that covers the full lifecycle of an NLP model, from raw data processing to model training, evaluation, and deployment.
 
-In addition to standard training and inference, the project explores **model quantization**, demonstrating how large language models can be efficiently compressed while maintaining competitive performance. This is particularly important for modern NLP systems, where model size and inference cost are significant challenges.
+In addition to standard training and inference, the project explores model quantization, demonstrating how large language models can be efficiently compressed while maintaining competitive performance. This is particularly important for modern NLP systems, where model size and inference cost are significant challenges.
 
 The system is designed to be reproducible and modular, making it easy to experiment locally with lightweight configurations while also scaling to full training setups on GPU.  
 
@@ -86,7 +86,7 @@ http://127.0.0.1:5000/apidocs/
 
 ### 1. Extractive Question Answering Prediction
 
-This project follows the standard **extractive question answering** formulation, where the model does not generate new text but instead selects an answer span directly from the given context. Given an input pair **Question (Q)** and **Context (C)**, the model processes the concatenated sequence:
+This project follows the standard extractive question answering formulation, where the model does not generate new text but instead selects an answer span directly from the given context. Given an input pair **Question (Q)** and **Context (C)**, the model processes the concatenated sequence:
 
 ```bash 
 [CLS]Q[SEP]C[SEP]
@@ -106,11 +106,11 @@ The final answer is then formed by taking all tokens between these two positions
 
 ### 2. Exact Match (EM)
 
-Exact Match (EM) is a strict evaluation metric that measures whether the predicted answer exactly matches any of the ground-truth answers. EM is a **binary metric**, meaning that even small differences (e.g., missing a word) result in a score of 0.
+Exact Match (EM) is a strict evaluation metric that measures whether the predicted answer exactly matches any of the ground-truth answers. EM is a binary metric, meaning that even small differences (e.g., missing a word) result in a score of 0.
 
 ### 3. F1 Score (Token-Level Overlap)
 
-the F1 score provides a softer and more informative evaluation by measuring token-level overlap between prediction and ground truth. Both prediction and ground truth are treated as bags of tokens. The final F1 score is the harmonic mean of precision and recall. F1 provides partial credit when the predicted span overlaps with the correct answer, making it more robust than Exact Match for evaluating extractive QA systems.
+The F1 score provides a softer and more informative evaluation by measuring token-level overlap between prediction and ground truth. Both prediction and ground truth are treated as bags of tokens. The final F1 score is the harmonic mean of precision and recall. F1 provides partial credit when the predicted span overlaps with the correct answer, making it more robust than EM for evaluation.
 
 ### 4. Evaluation Results
 
@@ -124,7 +124,7 @@ the F1 score provides a softer and more informative evaluation by measuring toke
 
 - EM and F1 typically remain almost unchanged for dynamic quantization.
 - The main benefit is reduced model size + faster CPU inference.
-- INT8 quantization in this project applies to Linear layers only.
+- INT8 quantization in this project applies to linear layers only.
 
 > Note: Results are based on training with 30K samples from the full dataset. Using the full dataset is expected to improve EM and F1 scores.
 
