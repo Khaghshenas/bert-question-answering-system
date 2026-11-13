@@ -9,7 +9,7 @@ venv/
 .ipynb_checkpoints
 
 # Datasets
-data/
+/data/
 
 # Models
 models/
